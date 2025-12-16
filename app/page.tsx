@@ -11,6 +11,7 @@ import { Download, Wifi, Zap } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { LoanAnalyst } from "@/components/LoanAnalyst";
 
 export default function Dashboard() {
   const currentMonth = LOAN_DATA.monthlyHistory[LOAN_DATA.monthlyHistory.length - 1];
@@ -488,6 +489,12 @@ export default function Dashboard() {
             </div>
           </CardContent>
         </Card>
+
+        {/* GenAI Loan Analyst */}
+        <LoanAnalyst
+          simulationResult={simulationResult}
+          simulatedData={simulatedData}
+        />
       </div>
     </div>
   );
