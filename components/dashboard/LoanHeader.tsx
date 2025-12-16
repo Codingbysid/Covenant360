@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Download, Wifi } from "lucide-react";
+import { Download, Wifi, Settings } from "lucide-react";
 
 export function LoanHeader() {
   return (
@@ -21,6 +21,12 @@ export function LoanHeader() {
             <Download className="mr-2 h-4 w-4" />
             Export to PDF
           </Button>
+          <Button variant="ghost" size="icon" className="h-9 w-9">
+            <Settings className="h-4 w-4 text-slate-400 hover:text-slate-50" />
+          </Button>
+          <div className="h-9 w-9 rounded-full bg-emerald-600 flex items-center justify-center text-slate-50 font-semibold text-sm">
+            SG
+          </div>
         </div>
       </div>
     </div>

@@ -1,13 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Zap } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 import { MonthlyData } from "@/lib/mockData";
+import { calculateCurrentRate } from "@/lib/logic";
 
 interface RiskSimulatorProps {
   initialData: MonthlyData;
@@ -38,6 +40,15 @@ export function RiskSimulator({ initialData, onSimulationComplete }: RiskSimulat
     is_compliant: boolean;
     message: string;
   } | null>(null);
+  const [showGlow, setShowGlow] = useState(false);
+  const previousRateRef = useRef<number | null>(null);
+  
+  // Initialize previous rate with current rate
+  useEffect(() => {
+    if (previousRateRef.current === null) {
+      previousRateRef.current = calculateCurrentRate(initialData).finalRate;
+    }
+  }, [initialData]);
 
   const runSimulation = async () => {
     setSimulationLoading(true);
@@ -76,6 +87,14 @@ export function RiskSimulator({ initialData, onSimulationComplete }: RiskSimulat
 
       const data = await response.json();
       setSimulationResult(data);
+      
+      // Check if rate is lower than previous/current rate for glow effect
+      if (previousRateRef.current !== null && data.new_interest_rate < previousRateRef.current) {
+        setShowGlow(true);
+        setTimeout(() => setShowGlow(false), 2000);
+      }
+      previousRateRef.current = data.new_interest_rate;
+      
       if (onSimulationComplete) {
         onSimulationComplete(data, simulatedData);
       }
@@ -174,14 +193,41 @@ export function RiskSimulator({ initialData, onSimulationComplete }: RiskSimulat
           </div>
 
           {/* Results Section */}
-          {simulationResult && (
+          {simulationLoading ? (
             <div className="mt-6 p-4 rounded-lg border border-slate-700 bg-slate-800/50">
+              <h3 className="text-lg font-semibold mb-4 text-slate-50">Simulation Results</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-10 w-24" />
+                </div>
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-10 w-20" />
+                  <Skeleton className="h-3 w-16" />
+                </div>
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-28" />
+                  <Skeleton className="h-6 w-24" />
+                </div>
+              </div>
+              <div className="mt-4 space-y-2">
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-16 w-full" />
+              </div>
+            </div>
+          ) : simulationResult ? (
+            <div
+              className={`mt-6 p-4 rounded-lg border border-slate-700 bg-slate-800/50 transition-all ${
+                showGlow ? "animate-glow-green" : ""
+              }`}
+            >
               <h3 className="text-lg font-semibold mb-4 text-slate-50">Simulation Results</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label className="text-xs text-slate-400">New Interest Rate</Label>
                   <div
-                    className={`text-3xl font-bold ${
+                    className={`text-3xl font-bold tabular-nums ${
                       simulationResult.new_interest_rate < 6.5
                         ? "text-emerald-400"
                         : "text-rose-400"
@@ -193,7 +239,7 @@ export function RiskSimulator({ initialData, onSimulationComplete }: RiskSimulat
                 <div className="space-y-2">
                   <Label className="text-xs text-slate-400">Risk Score</Label>
                   <div
-                    className={`text-3xl font-bold ${
+                    className={`text-3xl font-bold tabular-nums ${
                       simulationResult.risk_score < 50
                         ? "text-emerald-400"
                         : simulationResult.risk_score < 80
@@ -234,7 +280,7 @@ export function RiskSimulator({ initialData, onSimulationComplete }: RiskSimulat
                 </p>
               </div>
             </div>
-          )}
+          ) : null}
         </div>
       </CardContent>
     </Card>

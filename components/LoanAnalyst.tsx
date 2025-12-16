@@ -41,8 +41,11 @@ export function LoanAnalyst({ simulationResult, simulatedData }: LoanAnalystProp
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [typingMessage, setTypingMessage] = useState("");
+  const [typingIndex, setTypingIndex] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const hasAnalyzedRef = useRef(false);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Auto-analyze when simulation result changes
   useEffect(() => {
@@ -56,6 +59,18 @@ export function LoanAnalyst({ simulationResult, simulatedData }: LoanAnalystProp
   useEffect(() => {
     hasAnalyzedRef.current = false;
   }, [simulationResult]);
+
+  // Reset typing state when sheet closes
+  useEffect(() => {
+    if (!open) {
+      setIsTyping(false);
+      setTypingMessage("");
+      setTypingIndex(0);
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+    }
+  }, [open]);
 
   // Scroll to bottom when new messages arrive or typing state changes
   useEffect(() => {
@@ -120,14 +135,48 @@ export function LoanAnalyst({ simulationResult, simulatedData }: LoanAnalystProp
   };
 
   const addMessage = (role: "user" | "assistant", content: string) => {
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      role,
-      content,
-      timestamp: new Date(),
-    };
-    setMessages((prev) => [...prev, newMessage]);
+    if (role === "user") {
+      const newMessage: Message = {
+        id: Date.now().toString(),
+        role,
+        content,
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, newMessage]);
+    } else {
+      // For assistant messages, start typing effect
+      setIsTyping(true);
+      setTypingMessage(content);
+      setTypingIndex(0);
+    }
   };
+
+  // Typing effect for assistant messages
+  useEffect(() => {
+    if (isTyping && typingMessage && typingIndex < typingMessage.length) {
+      typingTimeoutRef.current = setTimeout(() => {
+        setTypingIndex((prev) => prev + 1);
+      }, 30); // Adjust speed here (30ms per character)
+    } else if (isTyping && typingMessage && typingIndex >= typingMessage.length) {
+      // Typing complete, add message
+      const newMessage: Message = {
+        id: Date.now().toString(),
+        role: "assistant",
+        content: typingMessage,
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, newMessage]);
+      setIsTyping(false);
+      setTypingMessage("");
+      setTypingIndex(0);
+    }
+
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+    };
+  }, [isTyping, typingMessage, typingIndex]);
 
   const handleSend = () => {
     if (!inputValue.trim() || isTyping) return;
@@ -136,16 +185,12 @@ export function LoanAnalyst({ simulationResult, simulatedData }: LoanAnalystProp
     setInputValue("");
     addMessage("user", userMessage);
 
-    // Simulate typing delay
-    setIsTyping(true);
-    setTimeout(() => {
-      const response = generateResponse(userMessage);
-      addMessage("assistant", response);
-      setIsTyping(false);
-    }, 1000);
+    // Generate response and start typing effect
+    const response = generateResponse(userMessage);
+    addMessage("assistant", response);
   };
 
-  const generateResponse = (userMessage: string): string {
+  const generateResponse = (userMessage: string): string => {
     const lowerMessage = userMessage.toLowerCase();
 
     // Rate-related questions
@@ -217,7 +262,7 @@ export function LoanAnalyst({ simulationResult, simulatedData }: LoanAnalystProp
 
       {/* Sheet Panel */}
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="right" className="w-full sm:max-w-md p-0 flex flex-col">
+        <SheetContent side="right" className="w-full sm:max-w-md p-0 flex flex-col border-l-emerald-500/20">
           <SheetHeader className="px-6 pt-6 pb-4 border-b border-slate-700">
             <SheetTitle className="flex items-center gap-2">
               <Bot className="h-5 w-5 text-emerald-400" />
@@ -266,20 +311,13 @@ export function LoanAnalyst({ simulationResult, simulatedData }: LoanAnalystProp
                 </div>
               ))}
 
-              {isTyping && (
+              {isTyping && typingMessage && (
                 <div className="flex justify-start">
-                  <div className="bg-slate-800 border border-blue-500/30 rounded-lg px-4 py-2">
-                    <div className="flex gap-1">
-                      <div className="h-2 w-2 bg-slate-400 rounded-full animate-bounce" />
-                      <div
-                        className="h-2 w-2 bg-slate-400 rounded-full animate-bounce"
-                        style={{ animationDelay: "0.2s" }}
-                      />
-                      <div
-                        className="h-2 w-2 bg-slate-400 rounded-full animate-bounce"
-                        style={{ animationDelay: "0.4s" }}
-                      />
-                    </div>
+                  <div className="bg-slate-800 border border-emerald-500/30 rounded-lg px-4 py-2">
+                    <p className="whitespace-pre-wrap text-slate-50">
+                      {typingMessage.substring(0, typingIndex)}
+                      <span className="animate-pulse">|</span>
+                    </p>
                   </div>
                 </div>
               )}

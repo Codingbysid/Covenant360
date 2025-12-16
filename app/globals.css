@@ -13,3 +13,22 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+/* Tabular numbers for financial data */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Glow animation for positive rate changes */
+@keyframes glow-green {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+  50% {
+    box-shadow: 0 0 20px 5px rgba(16, 185, 129, 0.4);
+  }
+}
+
+.animate-glow-green {
+  animation: glow-green 2s ease-in-out;
+}
+

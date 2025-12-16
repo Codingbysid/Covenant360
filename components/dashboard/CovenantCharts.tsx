@@ -11,8 +11,10 @@ import {
   Tooltip,
   Legend,
   ReferenceLine,
+  ReferenceArea,
   ResponsiveContainer,
 } from "recharts";
+import { ChartTooltip } from "@/components/ui/chart-tooltip";
 
 export function CovenantCharts() {
   // Prepare chart data
@@ -42,14 +44,16 @@ export function CovenantCharts() {
               <CartesianGrid strokeDasharray="3 3" stroke="#475569" />
               <XAxis dataKey="month" stroke="#94a3b8" />
               <YAxis stroke="#94a3b8" />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "#1e293b",
-                  border: "1px solid #475569",
-                  borderRadius: "6px",
-                }}
-              />
+              <Tooltip content={<ChartTooltip />} />
               <Legend />
+              <ReferenceArea
+                y1={LOAN_DATA.covenants.financial.limit}
+                y2={10}
+                fill="#ef4444"
+                fillOpacity={0.1}
+                stroke="#ef4444"
+                strokeOpacity={0.3}
+              />
               <Area
                 type="monotone"
                 dataKey="Leverage Ratio"
@@ -80,13 +84,7 @@ export function CovenantCharts() {
               <CartesianGrid strokeDasharray="3 3" stroke="#475569" />
               <XAxis dataKey="month" stroke="#94a3b8" />
               <YAxis stroke="#94a3b8" />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "#1e293b",
-                  border: "1px solid #475569",
-                  borderRadius: "6px",
-                }}
-              />
+              <Tooltip content={<ChartTooltip />} />
               <Legend />
               <Bar dataKey="Carbon Emissions" fill="#f59e0b" />
               <ReferenceLine
