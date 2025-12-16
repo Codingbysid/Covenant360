@@ -3,13 +3,16 @@
 import { LOAN_DATA } from "@/lib/mockData";
 import { calculateCurrentRate } from "@/lib/logic";
 import { useMemo, useState } from "react";
+import { motion } from "framer-motion";
 import { LoanAnalyst } from "@/components/LoanAnalyst";
 import { LoanHeader } from "@/components/dashboard/LoanHeader";
+import { MarketTicker } from "@/components/dashboard/MarketTicker";
 import { LoanSummary } from "@/components/dashboard/LoanSummary";
 import { LiveRateCards } from "@/components/dashboard/LiveRateCards";
 import { CovenantCharts } from "@/components/dashboard/CovenantCharts";
 import { CovenantLedger } from "@/components/dashboard/CovenantLedger";
 import { RiskSimulator } from "@/components/dashboard/RiskSimulator";
+import { FadeIn } from "@/components/ui/fade-in";
 
 export default function Dashboard() {
   const currentMonth = LOAN_DATA.monthlyHistory[LOAN_DATA.monthlyHistory.length - 1];
@@ -71,17 +74,30 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black">
-      <LoanHeader />
+      <FadeIn delay={0}>
+        <LoanHeader />
+      </FadeIn>
+      <MarketTicker />
 
       <div className="container mx-auto p-6 space-y-6">
-        <LoanSummary currentMonth={currentMonth} />
-        <LiveRateCards currentMonth={currentMonth} rateCalculation={rateCalculation} />
-        <CovenantCharts />
-        <CovenantLedger monthlyDataWithRates={monthlyDataWithRates} />
-        <RiskSimulator
-          initialData={currentMonth}
-          onSimulationComplete={handleSimulationComplete}
-        />
+        <FadeIn delay={0.1}>
+          <LoanSummary currentMonth={currentMonth} />
+        </FadeIn>
+        <FadeIn delay={0.2}>
+          <LiveRateCards currentMonth={currentMonth} rateCalculation={rateCalculation} />
+        </FadeIn>
+        <FadeIn delay={0.3}>
+          <CovenantCharts />
+        </FadeIn>
+        <FadeIn delay={0.4}>
+          <CovenantLedger monthlyDataWithRates={monthlyDataWithRates} />
+        </FadeIn>
+        <FadeIn delay={0.4}>
+          <RiskSimulator
+            initialData={currentMonth}
+            onSimulationComplete={handleSimulationComplete}
+          />
+        </FadeIn>
         <LoanAnalyst simulationResult={simulationResult} simulatedData={simulatedData} />
       </div>
     </div>

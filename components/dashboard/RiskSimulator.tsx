@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { motion } from "framer-motion";
 import { Zap } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import { CountUpNumber } from "@/components/ui/count-up";
 import { MonthlyData } from "@/lib/mockData";
 import { calculateCurrentRate } from "@/lib/logic";
 
@@ -170,11 +172,16 @@ export function RiskSimulator({ initialData, onSimulationComplete }: RiskSimulat
 
           {/* Run Simulation Button */}
           <div className="space-y-2">
-            <Button
-              onClick={runSimulation}
-              disabled={simulationLoading}
-              className="w-full md:w-auto"
+            <motion.div
+              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.02 }}
+              transition={{ type: "spring", stiffness: 400, damping: 17 }}
             >
+              <Button
+                onClick={runSimulation}
+                disabled={simulationLoading}
+                className="w-full md:w-auto"
+              >
               {simulationLoading ? (
                 <>
                   <span className="mr-2">Running...</span>
@@ -187,6 +194,7 @@ export function RiskSimulator({ initialData, onSimulationComplete }: RiskSimulat
                 </>
               )}
             </Button>
+            </motion.div>
             {simulationError && (
               <p className="text-sm text-red-400">{simulationError}</p>
             )}
@@ -233,7 +241,12 @@ export function RiskSimulator({ initialData, onSimulationComplete }: RiskSimulat
                         : "text-rose-400"
                     }`}
                   >
-                    {simulationResult.new_interest_rate.toFixed(2)}%
+                    <CountUpNumber
+                      end={simulationResult.new_interest_rate}
+                      decimals={2}
+                      suffix="%"
+                      duration={1.5}
+                    />
                   </div>
                 </div>
                 <div className="space-y-2">
@@ -247,7 +260,11 @@ export function RiskSimulator({ initialData, onSimulationComplete }: RiskSimulat
                         : "text-rose-400"
                     }`}
                   >
-                    {simulationResult.risk_score.toFixed(1)}
+                    <CountUpNumber
+                      end={simulationResult.risk_score}
+                      decimals={1}
+                      duration={1.5}
+                    />
                   </div>
                   <div className="text-xs text-slate-400">
                     {simulationResult.risk_score < 50

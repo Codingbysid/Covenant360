@@ -33,3 +33,19 @@ body {
   animation: glow-green 2s ease-in-out;
 }
 
+/* Aurora background animation */
+@keyframes aurora {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.aurora-bg {
+  background: radial-gradient(ellipse at top, var(--tw-gradient-stops));
+  background-size: 200% 200%;
+  animation: aurora 20s ease infinite;
+}
+

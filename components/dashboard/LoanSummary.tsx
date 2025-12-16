@@ -1,6 +1,9 @@
+"use client";
+
 import { LOAN_DATA } from "@/lib/mockData";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { CountUpNumber } from "@/components/ui/count-up";
 import { MonthlyData } from "@/lib/mockData";
 
 interface LoanSummaryProps {
@@ -20,7 +23,13 @@ export function LoanSummary({ currentMonth }: LoanSummaryProps) {
         <CardHeader>
           <CardDescription>Total Facility Amount</CardDescription>
           <CardTitle className="text-xl tabular-nums tracking-tight text-slate-50">
-            ${(LOAN_DATA.totalFacilityAmount / 1000000).toFixed(0)}M
+            $
+            <CountUpNumber
+              end={LOAN_DATA.totalFacilityAmount / 1000000}
+              decimals={0}
+              suffix="M"
+              duration={2}
+            />
           </CardTitle>
         </CardHeader>
       </Card>

@@ -1,8 +1,13 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { LOAN_DATA } from "@/lib/mockData";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { RateCalculationResult, getStatusMessage } from "@/lib/logic";
 import { MonthlyData } from "@/lib/mockData";
+import { CountUpNumber } from "@/components/ui/count-up";
 
 interface LiveRateCardsProps {
   currentMonth: MonthlyData;
@@ -13,11 +18,34 @@ export function LiveRateCards({ currentMonth, rateCalculation }: LiveRateCardsPr
   const rateColor = rateCalculation.finalRate < 6.5 ? "text-emerald-400" : "text-rose-400";
   const financialStatus = currentMonth.financialCovenantMet ? "success" : "destructive";
   const esgStatus = currentMonth.esgTargetMet ? "success" : "warning";
+  const [flashColor, setFlashColor] = useState<string | null>(null);
+  const [prevRate, setPrevRate] = useState(rateCalculation.finalRate);
+
+  useEffect(() => {
+    if (prevRate !== rateCalculation.finalRate) {
+      // Flash green for rate decrease, red for increase
+      const color = rateCalculation.finalRate < prevRate ? "emerald" : "rose";
+      setFlashColor(color);
+      setTimeout(() => setFlashColor(null), 1000);
+      setPrevRate(rateCalculation.finalRate);
+    }
+  }, [rateCalculation.finalRate, prevRate]);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {/* Live Interest Rate */}
-      <Card className="relative overflow-hidden">
+      <motion.div
+        animate={{
+          backgroundColor:
+            flashColor === "emerald"
+              ? "rgba(16, 185, 129, 0.1)"
+              : flashColor === "rose"
+              ? "rgba(244, 63, 94, 0.1)"
+              : "transparent",
+        }}
+        transition={{ duration: 0.3 }}
+      >
+        <Card className="relative overflow-hidden">
         {/* Gradient Background */}
         <div
           className={`absolute inset-0 opacity-20 ${
@@ -33,7 +61,12 @@ export function LiveRateCards({ currentMonth, rateCalculation }: LiveRateCardsPr
         <CardContent className="relative z-10">
           <div className="space-y-4">
             <div className={`text-6xl font-bold tabular-nums tracking-tight ${rateColor}`}>
-              {rateCalculation.finalRate.toFixed(2)}%
+              <CountUpNumber
+                end={rateCalculation.finalRate}
+                decimals={2}
+                suffix="%"
+                duration={1.5}
+              />
             </div>
             <div className="text-sm text-slate-400">
               {getStatusMessage(rateCalculation.status)}
@@ -60,6 +93,7 @@ export function LiveRateCards({ currentMonth, rateCalculation }: LiveRateCardsPr
           </div>
         </CardContent>
       </Card>
+      </motion.div>
 
       {/* Compliance Status */}
       <Card>
