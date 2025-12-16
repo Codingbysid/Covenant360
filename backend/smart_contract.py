@@ -9,6 +9,11 @@ import hashlib
 import json
 from datetime import datetime
 from typing import Dict, List
+from backend.config import (
+    SUSTAINABILITY_DISCOUNT,
+    SUSTAINABILITY_PENALTY,
+    COV_LITE_PENALTY,
+)
 
 
 class DigitalLoanAgreement:
@@ -61,24 +66,21 @@ class DigitalLoanAgreement:
         # ESG Target Check
         carbon_emissions = current_esg.get("carbon_emissions", 0)
         if carbon_emissions < self.esg_target:
-            sustainability_discount = 0.15
-            new_rate -= sustainability_discount
+            new_rate -= SUSTAINABILITY_DISCOUNT
             reasons.append(
-                f"Sustainability Discount Applied: -{sustainability_discount}% (ESG Target Met)"
+                f"Sustainability Discount Applied: -{SUSTAINABILITY_DISCOUNT}% (ESG Target Met)"
             )
         else:
-            sustainability_penalty = 0.05
-            new_rate += sustainability_penalty
+            new_rate += SUSTAINABILITY_PENALTY
             reasons.append(
-                f"Sustainability Penalty Applied: +{sustainability_penalty}% (ESG Target Missed)"
+                f"Sustainability Penalty Applied: +{SUSTAINABILITY_PENALTY}% (ESG Target Missed)"
             )
 
         # Risk-based adjustment (Cov-Lite Breach)
         if risk_score > 80:
-            cov_lite_penalty = 1.00
-            new_rate += cov_lite_penalty
+            new_rate += COV_LITE_PENALTY
             reasons.append(
-                f"Cov-Lite Breach: +{cov_lite_penalty}% (High Default Risk)"
+                f"Cov-Lite Breach: +{COV_LITE_PENALTY}% (High Default Risk)"
             )
 
         # Round to 2 decimal places
