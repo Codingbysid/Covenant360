@@ -40,7 +40,7 @@ export function CovenantLedger({ monthlyDataWithRates }: CovenantLedgerProps) {
                 <TableCell className="font-medium">{month.month}</TableCell>
                 <TableCell>
                   <span
-                    className={`tabular-nums ${
+                    className={`tabular-nums tracking-tight ${
                       month.financialCovenantMet ? "text-emerald-400" : "text-rose-400"
                     }`}
                   >
@@ -49,14 +49,14 @@ export function CovenantLedger({ monthlyDataWithRates }: CovenantLedgerProps) {
                 </TableCell>
                 <TableCell>
                   <span
-                    className={`tabular-nums ${
+                    className={`tabular-nums tracking-tight ${
                       month.esgTargetMet ? "text-emerald-400" : "text-rose-400"
                     }`}
                   >
                     {month.carbonEmissions}
                   </span>
                 </TableCell>
-                <TableCell className="font-mono tabular-nums">
+                <TableCell className="font-mono tabular-nums tracking-tight text-slate-50">
                   {month.rateApplied?.toFixed(2)}%
                 </TableCell>
                 <TableCell className="text-xs text-slate-400">{month.notes}</TableCell>

@@ -19,7 +19,7 @@ export function LoanSummary({ currentMonth }: LoanSummaryProps) {
       <Card>
         <CardHeader>
           <CardDescription>Total Facility Amount</CardDescription>
-          <CardTitle className="text-xl tabular-nums">
+          <CardTitle className="text-xl tabular-nums tracking-tight text-slate-50">
             ${(LOAN_DATA.totalFacilityAmount / 1000000).toFixed(0)}M
           </CardTitle>
         </CardHeader>

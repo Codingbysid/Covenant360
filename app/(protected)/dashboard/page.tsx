@@ -70,7 +70,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-50">
+    <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black">
       <LoanHeader />
 
       <div className="container mx-auto p-6 space-y-6">
@@ -87,3 +87,4 @@ export default function Dashboard() {
     </div>
   );
 }
+

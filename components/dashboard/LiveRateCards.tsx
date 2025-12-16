@@ -32,7 +32,7 @@ export function LiveRateCards({ currentMonth, rateCalculation }: LiveRateCardsPr
         </CardHeader>
         <CardContent className="relative z-10">
           <div className="space-y-4">
-            <div className={`text-6xl font-bold tabular-nums ${rateColor}`}>
+            <div className={`text-6xl font-bold tabular-nums tracking-tight ${rateColor}`}>
               {rateCalculation.finalRate.toFixed(2)}%
             </div>
             <div className="text-sm text-slate-400">
@@ -70,7 +70,7 @@ export function LiveRateCards({ currentMonth, rateCalculation }: LiveRateCardsPr
         <CardContent>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">Financial Covenant</span>
+              <span className="text-sm font-medium text-slate-300">Financial Covenant</span>
               <Badge variant={financialStatus}>
                 {currentMonth.financialCovenantMet ? "OK" : "BREACH"}
               </Badge>
@@ -81,7 +81,7 @@ export function LiveRateCards({ currentMonth, rateCalculation }: LiveRateCardsPr
               {LOAN_DATA.covenants.financial.unit}
             </div>
             <div className="flex items-center justify-between mt-6">
-              <span className="text-sm font-medium">ESG Target</span>
+              <span className="text-sm font-medium text-slate-300">ESG Target</span>
               <Badge variant={esgStatus}>
                 {currentMonth.esgTargetMet ? "MET" : "MISSED"}
               </Badge>

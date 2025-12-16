@@ -1,6 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 :root {
   --background: #0f172a;
@@ -9,8 +7,11 @@
 
 body {
   color: var(--foreground);
-  background: var(--background);
+  background: radial-gradient(ellipse at top, var(--tw-gradient-stops));
+  background-color: #0f172a;
+  background-image: radial-gradient(ellipse at top, #0f172a 0%, #020617 50%, #000000 100%);
   font-family: Arial, Helvetica, sans-serif;
+  min-height: 100vh;
 }
 
 /* Tabular numbers for financial data */

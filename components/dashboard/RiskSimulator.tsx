@@ -227,7 +227,7 @@ export function RiskSimulator({ initialData, onSimulationComplete }: RiskSimulat
                 <div className="space-y-2">
                   <Label className="text-xs text-slate-400">New Interest Rate</Label>
                   <div
-                    className={`text-3xl font-bold tabular-nums ${
+                    className={`text-3xl font-bold tabular-nums tracking-tight ${
                       simulationResult.new_interest_rate < 6.5
                         ? "text-emerald-400"
                         : "text-rose-400"
@@ -239,7 +239,7 @@ export function RiskSimulator({ initialData, onSimulationComplete }: RiskSimulat
                 <div className="space-y-2">
                   <Label className="text-xs text-slate-400">Risk Score</Label>
                   <div
-                    className={`text-3xl font-bold tabular-nums ${
+                    className={`text-3xl font-bold tabular-nums tracking-tight ${
                       simulationResult.risk_score < 50
                         ? "text-emerald-400"
                         : simulationResult.risk_score < 80

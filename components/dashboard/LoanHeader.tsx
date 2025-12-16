@@ -4,7 +4,7 @@ import { Download, Wifi, Settings } from "lucide-react";
 
 export function LoanHeader() {
   return (
-    <div className="border-b border-slate-700 bg-slate-800 px-6 py-4">
+    <div className="border-b border-white/10 bg-slate-900/40 backdrop-blur-xl px-6 py-4">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-50">Covenant360</h1>
