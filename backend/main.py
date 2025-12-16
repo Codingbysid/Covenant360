@@ -13,6 +13,14 @@ from backend.models import (
 )
 from backend.risk_engine import RiskModel
 from backend.smart_contract import DigitalLoanAgreement
+from backend.config import (
+    HISTORICAL_EBITDA,
+    BASE_RATE,
+    BASE_MARGIN,
+    ESG_TARGET,
+    MAX_LEVERAGE_RATIO,
+    HIGH_RISK_THRESHOLD,
+)
 
 app = FastAPI(
     title="Covenant360 API",
@@ -62,22 +70,8 @@ async def calculate_rate(request: MonthlyDataRequest):
         RateCalculationResponse with new_interest_rate, risk_score, is_compliant, audit_hash, and message
     """
     try:
-        # For this example, we'll use a simple historical EBITDA list
-        # In production, this would come from a database
-        historical_ebitda = [
-            35000000,
-            36000000,
-            37000000,
-            38000000,
-            39000000,
-            40000000,
-            41000000,
-            42000000,
-            40500000,
-            40000000,
-            39500000,
-            request.financial.ebitda,
-        ]
+        # Use historical EBITDA from config, append current EBITDA
+        historical_ebitda = HISTORICAL_EBITDA + [request.financial.ebitda]
 
         # Initialize Risk Model
         risk_model = RiskModel(historical_ebitda)
@@ -86,12 +80,11 @@ async def calculate_rate(request: MonthlyDataRequest):
             cash_reserves=request.financial.cash_reserves or 0.0,
         )
 
-        # Initialize Digital Loan Agreement
-        # In production, these values would come from the loan contract
+        # Initialize Digital Loan Agreement with config values
         loan_agreement = DigitalLoanAgreement(
-            base_rate=4.5,
-            margin=2.0,
-            esg_target=200.0,
+            base_rate=BASE_RATE,
+            margin=BASE_MARGIN,
+            esg_target=ESG_TARGET,
         )
 
         # Execute ratchet
@@ -114,19 +107,19 @@ async def calculate_rate(request: MonthlyDataRequest):
             else 0
         )
         is_compliant = (
-            leverage_ratio <= 4.0
-            and request.esg.carbon_emissions < 200.0
-            and risk_result["risk_score"] < 80
+            leverage_ratio <= MAX_LEVERAGE_RATIO
+            and request.esg.carbon_emissions < ESG_TARGET
+            and risk_result["risk_score"] < HIGH_RISK_THRESHOLD
         )
 
         # Generate message
         messages = []
-        if request.esg.carbon_emissions < 200.0:
+        if request.esg.carbon_emissions < ESG_TARGET:
             messages.append("Rate Reduced: ESG Target Met")
         else:
             messages.append("Rate Increased: ESG Target Missed")
 
-        if risk_result["risk_score"] > 80:
+        if risk_result["risk_score"] > HIGH_RISK_THRESHOLD:
             messages.append("High Default Risk Detected")
 
         if not is_compliant:
@@ -141,8 +134,8 @@ async def calculate_rate(request: MonthlyDataRequest):
             audit_hash=contract_result["audit_hash"],
             message=message,
             breakdown={
-                "base_rate": 4.5,
-                "margin": 2.0,
+                "base_rate": BASE_RATE,
+                "margin": BASE_MARGIN,
                 "risk_score": risk_result["risk_score"],
                 "volatility": risk_result["volatility"],
                 "probability_of_default": risk_result["probability_of_default"],

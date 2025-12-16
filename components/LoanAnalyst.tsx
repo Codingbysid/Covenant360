@@ -57,16 +57,17 @@ export function LoanAnalyst({ simulationResult, simulatedData }: LoanAnalystProp
     hasAnalyzedRef.current = false;
   }, [simulationResult]);
 
-  // Scroll to bottom when new messages arrive
+  // Scroll to bottom when new messages arrive or typing state changes
   useEffect(() => {
-    if (scrollRef.current) {
-      const scrollElement = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]');
-      if (scrollElement) {
-        setTimeout(() => {
+    const timer = setTimeout(() => {
+      if (scrollRef.current) {
+        const scrollElement = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]');
+        if (scrollElement) {
           scrollElement.scrollTop = scrollElement.scrollHeight;
-        }, 100);
+        }
       }
-    }
+    }, 100);
+    return () => clearTimeout(timer);
   }, [messages, isTyping]);
 
   const analyzeSimulation = () => {

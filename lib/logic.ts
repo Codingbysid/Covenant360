@@ -23,12 +23,12 @@ export function calculateCurrentRate(monthData: MonthlyData): RateCalculationRes
 
   // ESG Target Check
   if (monthData.esgTargetMet) {
-    const sustainabilityDiscount = 0.10;
+    const sustainabilityDiscount = 0.15; // Matches backend smart_contract.py
     currentRate -= sustainabilityDiscount;
     breakdown.sustainabilityDiscount = sustainabilityDiscount;
     status = "ESG_DISCOUNT_APPLIED";
   } else {
-    const sustainabilityPenalty = 0.05;
+    const sustainabilityPenalty = 0.05; // Matches backend smart_contract.py
     currentRate += sustainabilityPenalty;
     breakdown.sustainabilityPenalty = sustainabilityPenalty;
     status = "ESG_PENALTY_APPLIED";
