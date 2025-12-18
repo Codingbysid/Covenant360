@@ -16,7 +16,7 @@ export const env = {
   DATABASE_URL: getEnvVar("DATABASE_URL", "file:./dev.db"),
 
   // NextAuth
-  NEXTAUTH_SECRET: getEnvVar("NEXTAUTH_SECRET"),
+  NEXTAUTH_SECRET: getEnvVar("NEXTAUTH_SECRET", "dev-secret-key-change-in-production-minimum-32-characters"),
   NEXTAUTH_URL: getEnvVar("NEXTAUTH_URL", "http://localhost:3000"),
 
   // Email (optional)

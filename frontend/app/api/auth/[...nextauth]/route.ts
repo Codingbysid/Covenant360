@@ -1,11 +1,10 @@
-import NextAuth from "next-auth";
+import NextAuth, { type NextAuthConfig } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { sanitizeEmail, rateLimit } from "@/lib/security";
-import { env } from "@/lib/env";
 
-export const authOptions = {
+export const authOptions: NextAuthConfig = {
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -76,7 +75,7 @@ export const authOptions = {
     strategy: "jwt" as const,
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
-  secret: env.NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET,
 };
 
 const handler = NextAuth(authOptions);
