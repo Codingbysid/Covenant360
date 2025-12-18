@@ -37,9 +37,9 @@ export default function LandingPage() {
             </FadeIn>
             <FadeIn delay={1.0}>
               <Button asChild size="lg" className="bg-emerald-600 hover:bg-emerald-700">
-                <Link href="/login" className="group">
+                <Link href="/login" className="group" aria-label="Launch Covenant360 Platform">
                   Launch Platform
-                  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
                 </Link>
               </Button>
             </FadeIn>

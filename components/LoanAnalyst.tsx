@@ -136,13 +136,13 @@ export function LoanAnalyst({ simulationResult, simulatedData }: LoanAnalystProp
 
   const addMessage = (role: "user" | "assistant", content: string) => {
     if (role === "user") {
-      const newMessage: Message = {
-        id: Date.now().toString(),
-        role,
-        content,
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, newMessage]);
+    const newMessage: Message = {
+      id: Date.now().toString(),
+      role,
+      content,
+      timestamp: new Date(),
+    };
+    setMessages((prev) => [...prev, newMessage]);
     } else {
       // For assistant messages, start typing effect
       setIsTyping(true);
@@ -186,8 +186,8 @@ export function LoanAnalyst({ simulationResult, simulatedData }: LoanAnalystProp
     addMessage("user", userMessage);
 
     // Generate response and start typing effect
-    const response = generateResponse(userMessage);
-    addMessage("assistant", response);
+      const response = generateResponse(userMessage);
+      addMessage("assistant", response);
   };
 
   const generateResponse = (userMessage: string): string => {

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 import { LogIn, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,11 +24,27 @@ export default function LoginPage() {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate authentication delay
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    try {
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
 
-    // Redirect to dashboard
-    router.push("/dashboard");
+      if (result?.error) {
+        alert("Invalid credentials. Please try again.");
+        setIsLoading(false);
+        return;
+      }
+
+      // Redirect to dashboard on success
+      router.push("/dashboard");
+      router.refresh();
+    } catch (error) {
+      console.error("Sign in error:", error);
+      alert("An error occurred. Please try again.");
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -52,6 +69,8 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                autoComplete="email"
+                aria-label="Email address"
                 className="border-slate-700 bg-slate-800/50 text-slate-50 placeholder:text-slate-500"
               />
             </div>
@@ -66,6 +85,8 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                autoComplete="current-password"
+                aria-label="Password"
                 className="border-slate-700 bg-slate-800/50 text-slate-50 placeholder:text-slate-500"
               />
             </div>

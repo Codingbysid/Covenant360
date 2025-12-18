@@ -1,0 +1,176 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum UserRole {
+  ADMIN
+  CREDIT_OFFICER
+  BORROWER
+}
+
+enum LoanStatus {
+  ACTIVE
+  CLOSED
+  DEFAULTED
+  PENDING
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  password      String    // Hashed password
+  role          UserRole  @default(BORROWER)
+  organizationId String?
+  organization  Organization? @relation(fields: [organizationId], references: [id])
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  sessions      Session[]
+  accounts      Account[]
+
+  @@index([email])
+  @@index([organizationId])
+}
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  users     User[]
+  loans     Loan[]
+
+  @@unique([name])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Loan {
+  id                    String     @id @default(cuid())
+  borrowerName          String
+  totalFacilityAmount   Float
+  baseRate              Float      @default(4.5)
+  baseMargin            Float      @default(2.0)
+  currentRate           Float
+  status                LoanStatus @default(ACTIVE)
+  organizationId        String?
+  organization          Organization? @relation(fields: [organizationId], references: [id])
+  createdAt             DateTime   @default(now())
+  updatedAt             DateTime   @updatedAt
+  transactions          Transaction[]
+  monthlyData          MonthlyData[]
+  covenants             LoanCovenant?
+
+  @@index([organizationId])
+  @@index([status])
+}
+
+model LoanCovenant {
+  id                String  @id @default(cuid())
+  loanId            String  @unique
+  loan              Loan    @relation(fields: [loanId], references: [id], onDelete: Cascade)
+  maxLeverageRatio  Float   @default(4.0)
+  esgTarget         Float   @default(200.0)
+  sustainabilityDiscount Float @default(0.15)
+  sustainabilityPenalty   Float @default(0.05)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model MonthlyData {
+  id                String   @id @default(cuid())
+  loanId            String
+  loan              Loan     @relation(fields: [loanId], references: [id], onDelete: Cascade)
+  month             String
+  ebitda            Float
+  debt              Float
+  revenue           Float
+  cashReserves      Float
+  carbonEmissions   Float
+  leverageRatio     Float
+  rateApplied       Float
+  financialCovenantMet Boolean
+  esgTargetMet      Boolean
+  riskScore         Float?
+  createdAt         DateTime @default(now())
+
+  @@index([loanId])
+  @@index([month])
+}
+
+model Transaction {
+  id                String   @id @default(cuid())
+  loanId            String
+  loan              Loan     @relation(fields: [loanId], references: [id], onDelete: Cascade)
+  newRate           Float
+  previousRate      Float?
+  riskScore         Float
+  isCompliant       Boolean
+  auditHash         String   @unique
+  reason            String
+  financialData     String   // JSON string
+  esgData           String   // JSON string
+  createdAt         DateTime @default(now())
+
+  @@index([loanId])
+  @@index([auditHash])
+  @@index([createdAt])
+}
+
+model Notification {
+  id          String   @id @default(cuid())
+  userId      String?
+  loanId      String?
+  type        String   // BREACH, ALERT, INFO
+  title       String
+  message     String
+  read        Boolean  @default(false)
+  emailSent   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([loanId])
+  @@index([read])
+}

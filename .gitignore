@@ -25,7 +25,10 @@ yarn-debug.log*
 yarn-error.log*
 
 # local env files
+.env
 .env*.local
+.env.production
+.env.development
 
 # vercel
 .vercel
@@ -45,3 +48,16 @@ venv/
 ENV/
 .venv
 
+
+/lib/generated/prisma
+
+# Database files
+*.db
+*.db-journal
+dev.db
+*.sqlite
+*.sqlite3
+
+# Documentation files (temporary)
+IMPLEMENTATION_STATUS.md
+PROFILE_IMPLEMENTATION.md
