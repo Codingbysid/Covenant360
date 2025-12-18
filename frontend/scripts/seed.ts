@@ -28,8 +28,14 @@ console.log("- borrower@company.com / borrower123 (BORROWER)");
 // Export for potential API-based seeding
 export {};
 
+// Note: This script has Prisma 7 adapter issues
+// Use scripts/seed-via-api.ts instead for seeding
+
 async function main() {
   console.log("Seeding database...");
+  
+  // Import prisma client
+  const { prisma } = await import("@/lib/prisma");
 
   // Create organization
   const organization = await prisma.organization.upsert({
@@ -161,6 +167,11 @@ main()
     process.exit(1);
   })
   .finally(async () => {
-    await prisma.$disconnect();
+    try {
+      const { prisma } = await import("@/lib/prisma");
+      await prisma.$disconnect();
+    } catch (e) {
+      // Ignore disconnect errors
+    }
   });
 

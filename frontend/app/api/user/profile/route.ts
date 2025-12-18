@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { getToken } from "next-auth/jwt";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 
-async function getCurrentUser() {
-  const session = await getServerSession(authOptions);
-  return session?.user;
+async function getCurrentUser(request: NextRequest) {
+  const token = await getToken({
+    req: request,
+    secret: process.env.NEXTAUTH_SECRET,
+  });
+  return token;
 }
 
 const profileSchema = z.object({
@@ -15,7 +17,7 @@ const profileSchema = z.object({
 
 export async function PUT(request: NextRequest) {
   try {
-    const user = await getCurrentUser();
+    const user = await getCurrentUser(request);
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

@@ -2,6 +2,8 @@ import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { sanitizeEmail, rateLimit } from "@/lib/security";
+import { env } from "@/lib/env";
 
 export const authOptions = {
   providers: [
@@ -11,13 +13,13 @@ export const authOptions = {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials: { email?: string; password?: string }, req?: Request) {
+      async authorize(credentials: Partial<Record<"email" | "password", unknown>>) {
         if (!credentials?.email || !credentials?.password) {
           return null;
         }
 
         // Sanitize email
-        const email = sanitizeEmail(credentials.email);
+        const email = sanitizeEmail(String(credentials.email));
 
         // Rate limiting (5 attempts per 15 minutes per email)
         const rateLimitKey = `auth:${email}`;
@@ -34,7 +36,7 @@ export const authOptions = {
         }
 
         const isPasswordValid = await bcrypt.compare(
-          credentials.password,
+          String(credentials.password),
           user.password
         );
 
@@ -71,7 +73,7 @@ export const authOptions = {
     signIn: "/login",
   },
   session: {
-    strategy: "jwt",
+    strategy: "jwt" as const,
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   secret: env.NEXTAUTH_SECRET,

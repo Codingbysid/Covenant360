@@ -74,10 +74,10 @@ export function getClientIP(request: NextRequest): string {
   return "unknown";
 }
 
-export function validateCSRFToken(token: string, sessionToken: string): boolean {
+export function validateCSRFToken(token: string | undefined, sessionToken: string | undefined): boolean {
   // In production, implement proper CSRF token validation
   // For now, basic check
-  return token && sessionToken && token === sessionToken;
+  return !!(token && sessionToken && token === sessionToken);
 }
 
 // Content Security Policy

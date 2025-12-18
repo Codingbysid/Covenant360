@@ -68,7 +68,7 @@ export function generateLoanReportPDF(data: LoanReportData): Blob {
 
     // Table header
     doc.setFontSize(10);
-    doc.setFont(undefined, "bold");
+    doc.setFont("helvetica", "bold");
     doc.text("Month", 20, yPosition);
     doc.text("Rate", 60, yPosition);
     doc.text("Leverage", 90, yPosition);
@@ -76,7 +76,7 @@ export function generateLoanReportPDF(data: LoanReportData): Blob {
     doc.text("Status", 160, yPosition);
     yPosition += 7;
 
-    doc.setFont(undefined, "normal");
+    doc.setFont("helvetica", "normal");
     data.monthlyData.forEach((month) => {
       if (yPosition > pageHeight - 20) {
         doc.addPage();

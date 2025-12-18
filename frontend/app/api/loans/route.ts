@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { getToken } from "next-auth/jwt";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { sanitizeInput, rateLimit, getClientIP } from "@/lib/security";
 
-async function getCurrentUser() {
-  const session = await getServerSession(authOptions);
-  return session?.user;
+async function getCurrentUser(request: NextRequest) {
+  const token = await getToken({
+    req: request,
+    secret: process.env.NEXTAUTH_SECRET,
+  });
+  return token;
 }
 
 const loanSchema = z.object({
@@ -20,7 +22,7 @@ const loanSchema = z.object({
 
 export async function GET(request: NextRequest) {
   try {
-    const user = await getCurrentUser();
+    const user = await getCurrentUser(request);
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -64,13 +66,13 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const user = await getCurrentUser();
+    const user = await getCurrentUser(request);
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Only admins and credit officers can create loans
-    if (!["ADMIN", "CREDIT_OFFICER"].includes((user as any).role)) {
+    if (!["ADMIN", "CREDIT_OFFICER"].includes(String((user as any).role))) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
