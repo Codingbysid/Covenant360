@@ -5,15 +5,15 @@ FastAPI server for calculating interest rates based on financial and ESG data.
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from backend.models import (
+from models import (
     MonthlyDataRequest,
     RateCalculationResponse,
     RiskScoreResponse,
     HistoricalEBITDA,
 )
-from backend.risk_engine import RiskModel
-from backend.smart_contract import DigitalLoanAgreement
-from backend.config import (
+from risk_engine import RiskModel
+from smart_contract import DigitalLoanAgreement
+from config import (
     HISTORICAL_EBITDA,
     BASE_RATE,
     BASE_MARGIN,

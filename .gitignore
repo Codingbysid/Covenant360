@@ -49,7 +49,20 @@ ENV/
 .venv
 
 
-/lib/generated/prisma
+# Frontend
+/frontend/lib/generated/prisma
+/frontend/.next/
+/frontend/out/
+/frontend/node_modules/
+/frontend/*.tsbuildinfo
+
+# Backend
+/backend/venv/
+/backend/__pycache__/
+/backend/*.pyc
+/backend/*.pyo
+/backend/*.pyd
+/backend/.Python
 
 # Database files
 *.db
@@ -61,3 +74,4 @@ dev.db
 # Documentation files (temporary)
 IMPLEMENTATION_STATUS.md
 PROFILE_IMPLEMENTATION.md
+CURRENT_STATE.md

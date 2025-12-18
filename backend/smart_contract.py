@@ -9,7 +9,7 @@ import hashlib
 import json
 from datetime import datetime
 from typing import Dict, List
-from backend.config import (
+from config import (
     SUSTAINABILITY_DISCOUNT,
     SUSTAINABILITY_PENALTY,
     COV_LITE_PENALTY,

@@ -1,6 +1,9 @@
 #!/bin/bash
 
 # Script to run the Covenant360 FastAPI backend
+# Run this from the project root directory
+
+cd "$(dirname "$0")"
 
 # Check if virtual environment exists
 if [ ! -d "venv" ]; then
@@ -24,5 +27,5 @@ echo "Starting Covenant360 API server..."
 echo "API will be available at http://localhost:8000"
 echo "API Documentation at http://localhost:8000/docs"
 echo ""
-uvicorn backend.main:app --reload --port 8000
+uvicorn main:app --reload --port 8000
 

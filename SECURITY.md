@@ -3,13 +3,13 @@
 ## 🔒 Security Features Implemented
 
 ### 1. Environment Variable Management
-- **File**: `lib/env.ts`
+- **File**: `frontend/lib/env.ts`
 - Validates all required environment variables
 - Throws errors if critical variables are missing in production
 - Ensures `NEXTAUTH_SECRET` is at least 32 characters in production
 
 ### 2. Security Headers
-- **File**: `middleware.ts`, `next.config.js`
+- **File**: `frontend/middleware.ts`, `frontend/next.config.js`
 - **Headers Implemented**:
   - `Strict-Transport-Security` (HSTS)
   - `X-Frame-Options: DENY`
@@ -20,14 +20,14 @@
   - `Content-Security-Policy` (CSP)
 
 ### 3. CORS Configuration
-- **File**: `middleware.ts`
+- **File**: `frontend/middleware.ts`
 - Configured for API routes
 - Allows only specified origins
 - Supports credentials
 - Handles preflight OPTIONS requests
 
 ### 4. Rate Limiting
-- **File**: `lib/security.ts`
+- **File**: `frontend/lib/security.ts`
 - In-memory rate limiter (use Redis in production)
 - Applied to:
   - Login: 5 attempts per 15 minutes per email
@@ -42,7 +42,7 @@
 - Applied to all user inputs in API routes
 
 ### 6. Authentication & Authorization
-- **File**: `app/api/auth/[...nextauth]/route.ts`
+- **File**: `frontend/app/api/auth/[...nextauth]/route.ts`
 - NextAuth.js v5 with JWT sessions
 - Password hashing with bcryptjs
 - Role-based access control (ADMIN, CREDIT_OFFICER, BORROWER)
