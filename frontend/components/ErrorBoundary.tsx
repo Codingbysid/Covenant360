@@ -38,6 +38,8 @@ export class ErrorBoundary extends Component<Props, State> {
     // In production, send to error tracking service (e.g., Sentry)
     if (process.env.NODE_ENV === "production") {
       // Example: Sentry.captureException(error, { contexts: { react: { componentStack: errorInfo.componentStack } } });
+      // Import and use: import { logError } from "@/lib/monitoring";
+      // logError(error, { componentStack: errorInfo.componentStack });
     }
 
     this.setState({

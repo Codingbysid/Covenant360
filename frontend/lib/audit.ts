@@ -32,7 +32,7 @@ export interface AuditLogData {
   action: AuditAction;
   resource: AuditResource;
   resourceId?: string;
-  details?: any;
+  details?: Record<string, unknown>;
   ipAddress?: string;
   userAgent?: string;
 }
@@ -44,13 +44,13 @@ export async function logAudit(data: AuditLogData): Promise<void> {
   try {
     await prisma.auditLog.create({
       data: {
-        userId: data.userId,
+        userId: data.userId || undefined,
         action: data.action,
         resource: data.resource,
-        resourceId: data.resourceId,
+        resourceId: data.resourceId || undefined,
         details: data.details ? JSON.stringify(data.details) : null,
-        ipAddress: data.ipAddress,
-        userAgent: data.userAgent,
+        ipAddress: data.ipAddress || undefined,
+        userAgent: data.userAgent || undefined,
       },
     });
   } catch (error) {
@@ -132,7 +132,7 @@ export async function logLoanOperation(
   userId: string,
   action: "CREATE" | "UPDATE" | "DELETE" | "VIEW",
   loanId: string,
-  details?: any,
+  details?: Record<string, unknown>,
   request?: NextRequest
 ): Promise<void> {
   const metadata = request ? getRequestMetadata(request) : { ipAddress: undefined, userAgent: undefined };
@@ -155,7 +155,22 @@ export async function getAuditLogs(
   resourceId?: string,
   userId?: string,
   limit: number = 100
-) {
+): Promise<Array<{
+  id: string;
+  userId: string | null;
+  action: string;
+  resource: string;
+  resourceId: string | null;
+  details: string | null;
+  ipAddress: string | null;
+  userAgent: string | null;
+  createdAt: Date;
+  user: {
+    id: string;
+    email: string;
+    name: string | null;
+  } | null;
+}>> {
   return prisma.auditLog.findMany({
     where: {
       resource,

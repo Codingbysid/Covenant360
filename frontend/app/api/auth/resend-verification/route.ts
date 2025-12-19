@@ -20,8 +20,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const userEmail = typeof token.email === "string" ? token.email : null;
+    if (!userEmail) {
+      return NextResponse.json(
+        { error: "Invalid token" },
+        { status: 401 }
+      );
+    }
+
     const user = await prisma.user.findUnique({
-      where: { email: token.email as string },
+      where: { email: userEmail },
     });
 
     if (!user) {

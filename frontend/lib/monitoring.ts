@@ -37,7 +37,7 @@ export function initErrorTracking() {
 /**
  * Log error to monitoring service
  */
-export function logError(error: Error, context?: Record<string, any>) {
+export function logError(error: Error, context?: Record<string, unknown>) {
   if (process.env.NODE_ENV === "production") {
     // Example: Sentry.captureException(error, { contexts: { custom: context } });
     console.error("Error logged to monitoring service:", error, context);
