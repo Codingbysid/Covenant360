@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Bot, Send } from "lucide-react";
+import { Bot, Send, Sparkles, TrendingDown, ShieldAlert, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -47,6 +47,13 @@ export function LoanAnalyst({ simulationResult, simulatedData }: LoanAnalystProp
   const hasAnalyzedRef = useRef(false);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Suggested Prompts Configuration
+  const QUICK_PROMPTS = [
+    { label: "Why did my rate change?", icon: TrendingDown, prompt: "Why did my interest rate change?" },
+    { label: "How to fix compliance?", icon: ShieldAlert, prompt: "How can I get back into compliance?" },
+    { label: "Explain ESG impact", icon: Sparkles, prompt: "How does ESG performance affect my loan?" },
+  ];
+
   // Auto-analyze when simulation result changes
   useEffect(() => {
     if (simulationResult && open && !hasAnalyzedRef.current) {
@@ -55,12 +62,10 @@ export function LoanAnalyst({ simulationResult, simulatedData }: LoanAnalystProp
     }
   }, [simulationResult, open]);
 
-  // Reset analysis flag when simulation result changes
   useEffect(() => {
     hasAnalyzedRef.current = false;
   }, [simulationResult]);
 
-  // Reset typing state when sheet closes
   useEffect(() => {
     if (!open) {
       setIsTyping(false);
@@ -72,7 +77,6 @@ export function LoanAnalyst({ simulationResult, simulatedData }: LoanAnalystProp
     }
   }, [open]);
 
-  // Scroll to bottom when new messages arrive or typing state changes
   useEffect(() => {
     const timer = setTimeout(() => {
       if (scrollRef.current) {
@@ -100,7 +104,6 @@ export function LoanAnalyst({ simulationResult, simulatedData }: LoanAnalystProp
 
     let analysis = `I've analyzed your new scenario. `;
 
-    // Risk score analysis
     if (simulationResult.risk_score > 50) {
       analysis += `Your Risk Score is ${simulationResult.risk_score.toFixed(1)}/100 (${riskLevel} risk)`;
       if (simulatedData.ebitda < 40000000) {
@@ -111,7 +114,6 @@ export function LoanAnalyst({ simulationResult, simulatedData }: LoanAnalystProp
       analysis += `Your Risk Score is ${simulationResult.risk_score.toFixed(1)}/100 (${riskLevel} risk), indicating a strong financial position. `;
     }
 
-    // Compliance analysis
     if (simulationResult.is_compliant) {
       analysis += `You remain compliant with both financial covenants and ESG targets. `;
     } else {
@@ -123,7 +125,6 @@ export function LoanAnalyst({ simulationResult, simulatedData }: LoanAnalystProp
       }
     }
 
-    // Interest rate analysis
     analysis += `Your interest rate is ${simulationResult.new_interest_rate.toFixed(2)}%. `;
     if (simulationResult.new_interest_rate < 6.5) {
       analysis += `This is favorable compared to market rates.`;
@@ -136,58 +137,18 @@ export function LoanAnalyst({ simulationResult, simulatedData }: LoanAnalystProp
 
   const addMessage = (role: "user" | "assistant", content: string) => {
     if (role === "user") {
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      role,
-      content,
-      timestamp: new Date(),
-    };
-    setMessages((prev) => [...prev, newMessage]);
+      const newMessage: Message = {
+        id: Date.now().toString(),
+        role,
+        content,
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, newMessage]);
     } else {
-      // For assistant messages, start typing effect
       setIsTyping(true);
       setTypingMessage(content);
       setTypingIndex(0);
     }
-  };
-
-  // Typing effect for assistant messages
-  useEffect(() => {
-    if (isTyping && typingMessage && typingIndex < typingMessage.length) {
-      typingTimeoutRef.current = setTimeout(() => {
-        setTypingIndex((prev) => prev + 1);
-      }, 30); // Adjust speed here (30ms per character)
-    } else if (isTyping && typingMessage && typingIndex >= typingMessage.length) {
-      // Typing complete, add message
-      const newMessage: Message = {
-        id: Date.now().toString(),
-        role: "assistant",
-        content: typingMessage,
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, newMessage]);
-      setIsTyping(false);
-      setTypingMessage("");
-      setTypingIndex(0);
-    }
-
-    return () => {
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
-      }
-    };
-  }, [isTyping, typingMessage, typingIndex]);
-
-  const handleSend = () => {
-    if (!inputValue.trim() || isTyping) return;
-
-    const userMessage = inputValue.trim();
-    setInputValue("");
-    addMessage("user", userMessage);
-
-    // Generate response and start typing effect
-      const response = generateResponse(userMessage);
-      addMessage("assistant", response);
   };
 
   const generateResponse = (userMessage: string): string => {
@@ -242,6 +203,46 @@ export function LoanAnalyst({ simulationResult, simulatedData }: LoanAnalystProp
     return `I'm here to help you understand your loan status. You can ask me about: interest rates, risk scores, ESG targets, compliance status, or how to improve your loan terms. Try asking "How do I lower my rate?" or "What's my risk score?"`;
   };
 
+  // Typing effect hook
+  useEffect(() => {
+    if (isTyping && typingMessage && typingIndex < typingMessage.length) {
+      typingTimeoutRef.current = setTimeout(() => {
+        setTypingIndex((prev) => prev + 1);
+      }, 20); // Sped up slightly to 20ms for better UX
+    } else if (isTyping && typingMessage && typingIndex >= typingMessage.length) {
+      const newMessage: Message = {
+        id: Date.now().toString(),
+        role: "assistant",
+        content: typingMessage,
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, newMessage]);
+      setIsTyping(false);
+      setTypingMessage("");
+      setTypingIndex(0);
+    }
+    return () => {
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    };
+  }, [isTyping, typingMessage, typingIndex]);
+
+  // Handle Quick Prompt Click
+  const handleQuickPrompt = (prompt: string) => {
+    if (isTyping) return;
+    addMessage("user", prompt);
+    const response = generateResponse(prompt);
+    addMessage("assistant", response);
+  };
+
+  const handleSend = () => {
+    if (!inputValue.trim() || isTyping) return;
+    const userMessage = inputValue.trim();
+    setInputValue("");
+    addMessage("user", userMessage);
+    const response = generateResponse(userMessage);
+    addMessage("assistant", response);
+  };
+
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -251,96 +252,111 @@ export function LoanAnalyst({ simulationResult, simulatedData }: LoanAnalystProp
 
   return (
     <>
-      {/* Floating Chat Button */}
       <Button
         onClick={() => setOpen(true)}
-        className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg z-50 bg-emerald-600 hover:bg-emerald-700"
+        className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-[0_0_20px_rgba(16,185,129,0.3)] z-50 bg-emerald-600 hover:bg-emerald-500 hover:scale-105 transition-all duration-300"
         size="icon"
       >
-        <Bot className="h-6 w-6" />
+        <Bot className="h-6 w-6 text-white" />
       </Button>
 
-      {/* Sheet Panel */}
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="right" className="w-full sm:max-w-md p-0 flex flex-col border-l-emerald-500/20">
-          <SheetHeader className="px-6 pt-6 pb-4 border-b border-slate-700">
-            <SheetTitle className="flex items-center gap-2">
+        <SheetContent side="right" className="w-full sm:max-w-md p-0 flex flex-col border-l border-emerald-500/20 bg-slate-900/95 backdrop-blur-xl">
+          <SheetHeader className="px-6 pt-6 pb-4 border-b border-white/10 bg-slate-900/50">
+            <SheetTitle className="flex items-center gap-2 text-slate-50">
               <Bot className="h-5 w-5 text-emerald-400" />
               Covenant360 AI Analyst
             </SheetTitle>
-            <SheetDescription>
-              Ask me anything about your loan status, risk, or compliance
+            <SheetDescription className="text-slate-400">
+              Real-time advisory on risk & compliance
             </SheetDescription>
           </SheetHeader>
 
-          {/* Messages Area */}
           <ScrollArea className="flex-1 px-6 py-4">
             <div ref={scrollRef}>
-            <div className="space-y-4">
-              {messages.length === 0 && (
-                <div className="text-center text-slate-400 text-sm py-8">
-                  <Bot className="h-8 w-8 mx-auto mb-2 text-slate-500" />
-                  <p>Start a conversation to analyze your loan data</p>
-                </div>
-              )}
+              <div className="space-y-4 pb-4">
+                {messages.length === 0 && (
+                  <div className="text-center text-slate-400 text-sm py-8 space-y-3">
+                    <div className="bg-slate-800/50 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-white/5">
+                        <Bot className="h-8 w-8 text-emerald-500/50" />
+                    </div>
+                    <p>I can analyze the current simulation results.</p>
+                  </div>
+                )}
 
-              {messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={cn(
-                    "flex",
-                    message.role === "user" ? "justify-end" : "justify-start"
-                  )}
-                >
+                {messages.map((message) => (
                   <div
+                    key={message.id}
                     className={cn(
-                      "max-w-[80%] rounded-lg px-4 py-2 text-sm",
-                      message.role === "user"
-                        ? "bg-slate-700 text-slate-50"
-                        : "bg-slate-800 border border-blue-500/30 text-slate-50"
+                      "flex",
+                      message.role === "user" ? "justify-end" : "justify-start"
                     )}
                   >
-                    <p className="whitespace-pre-wrap">{message.content}</p>
-                    <p className="text-xs text-slate-400 mt-1">
-                      {message.timestamp.toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </p>
+                    <div
+                      className={cn(
+                        "max-w-[85%] rounded-2xl px-4 py-3 text-sm shadow-sm",
+                        message.role === "user"
+                          ? "bg-emerald-600 text-white rounded-br-none"
+                          : "bg-slate-800 border border-white/10 text-slate-200 rounded-bl-none"
+                      )}
+                    >
+                      <p className="whitespace-pre-wrap leading-relaxed">{message.content}</p>
+                      <p className="text-[10px] text-slate-400/70 mt-2 text-right">
+                        {message.timestamp.toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
 
-              {isTyping && typingMessage && (
-                <div className="flex justify-start">
-                  <div className="bg-slate-800 border border-emerald-500/30 rounded-lg px-4 py-2">
-                    <p className="whitespace-pre-wrap text-slate-50">
-                      {typingMessage.substring(0, typingIndex)}
-                      <span className="animate-pulse">|</span>
-                    </p>
+                {isTyping && typingMessage && (
+                  <div className="flex justify-start">
+                    <div className="bg-slate-800 border border-emerald-500/20 rounded-2xl rounded-bl-none px-4 py-3 shadow-sm">
+                      <p className="whitespace-pre-wrap text-slate-200 text-sm leading-relaxed">
+                        {typingMessage.substring(0, typingIndex)}
+                        <span className="inline-block w-1.5 h-4 bg-emerald-500 ml-1 align-middle animate-pulse" />
+                      </p>
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
             </div>
           </ScrollArea>
 
-          {/* Input Area */}
-          <div className="border-t border-slate-700 p-4">
-            <div className="flex gap-2">
+          {/* Quick Prompts Area */}
+          <div className="px-4 pb-2">
+             <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                {QUICK_PROMPTS.map((qp, i) => (
+                    <button
+                        key={i}
+                        onClick={() => handleQuickPrompt(qp.prompt)}
+                        disabled={isTyping}
+                        className="flex items-center gap-1.5 whitespace-nowrap rounded-full bg-slate-800 border border-white/10 px-3 py-1.5 text-xs text-slate-300 hover:bg-slate-700 hover:text-emerald-400 transition-colors disabled:opacity-50"
+                    >
+                        <qp.icon className="h-3 w-3" />
+                        {qp.label}
+                    </button>
+                ))}
+             </div>
+          </div>
+
+          <div className="border-t border-white/10 p-4 bg-slate-900/50">
+            <div className="flex gap-2 relative">
               <Input
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Ask about your loan status..."
-                className="flex-1"
+                placeholder="Ask a question..."
+                className="flex-1 bg-slate-800/50 border-white/10 focus-visible:ring-emerald-500/50 pr-10"
                 disabled={isTyping}
               />
               <Button
                 onClick={handleSend}
                 disabled={!inputValue.trim() || isTyping}
                 size="icon"
-                className="bg-emerald-600 hover:bg-emerald-700"
+                className="absolute right-1 top-1 h-8 w-8 bg-emerald-600 hover:bg-emerald-500 rounded-md"
               >
                 <Send className="h-4 w-4" />
               </Button>
@@ -351,4 +367,3 @@ export function LoanAnalyst({ simulationResult, simulatedData }: LoanAnalystProp
     </>
   );
 }
-
