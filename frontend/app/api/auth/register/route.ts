@@ -3,6 +3,11 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { sanitizeInput, sanitizeEmail, rateLimit, getClientIP } from "@/lib/security";
+import { sendEmail } from "@/lib/email";
+import { generateVerificationEmail } from "@/lib/email-templates";
+import { logAudit, getRequestMetadata } from "@/lib/audit";
+import { env } from "@/lib/env";
+import crypto from "crypto";
 
 const registerSchema = z.object({
   email: z.string().email(),
@@ -55,6 +60,7 @@ export async function POST(request: NextRequest) {
         name: validatedData.name,
         role: validatedData.role || "BORROWER",
         organizationId: validatedData.organizationId,
+        emailVerified: false, // Require email verification
       },
       select: {
         id: true,
@@ -65,8 +71,50 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    // Generate verification token
+    const verificationToken = crypto.randomBytes(32).toString("hex");
+    const expires = new Date();
+    expires.setHours(expires.getHours() + 24); // 24 hours
+
+    // Create verification record
+    await prisma.emailVerification.create({
+      data: {
+        userId: user.id,
+        token: verificationToken,
+        expires,
+      },
+    });
+
+    // Send verification email
+    const verificationUrl = `${env.NEXTAUTH_URL}/verify-email?token=${verificationToken}`;
+    const emailTemplate = generateVerificationEmail(verificationUrl, user.name || undefined);
+
+    await sendEmail({
+      to: user.email,
+      subject: emailTemplate.subject,
+      html: emailTemplate.html,
+    });
+
+    // Log audit event
+    const { ipAddress, userAgent } = getRequestMetadata(request);
+    await logAudit({
+      userId: user.id,
+      action: "CREATE",
+      resource: "USER",
+      resourceId: user.id,
+      details: { email: user.email, role: user.role },
+      ipAddress,
+      userAgent,
+    });
+
     return NextResponse.json(
-      { message: "User created successfully", user },
+      { 
+        message: "User created successfully. Please check your email to verify your account.",
+        user: {
+          ...user,
+          emailVerified: false,
+        },
+      },
       { status: 201 }
     );
   } catch (error) {

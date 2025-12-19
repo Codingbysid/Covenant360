@@ -43,6 +43,11 @@ export const authOptions: NextAuthConfig = {
           return null;
         }
 
+        // Check if email is verified (optional - can be made required)
+        // if (!user.emailVerified) {
+        //   throw new Error("Please verify your email before logging in.");
+        // }
+
         return {
           id: user.id,
           email: user.email,

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AuthSessionProvider } from "@/components/providers/session-provider";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import "@/lib/monitoring";
 
 export const metadata: Metadata = {
   title: "Covenant360 - The Unified Operating System for SLLs",
@@ -15,7 +17,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <AuthSessionProvider>{children}</AuthSessionProvider>
+        <ErrorBoundary>
+          <AuthSessionProvider>{children}</AuthSessionProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );
