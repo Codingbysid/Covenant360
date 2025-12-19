@@ -3,8 +3,12 @@ Covenant360 Backend API
 FastAPI server for calculating interest rates based on financial and ESG data.
 """
 
-from fastapi import FastAPI, HTTPException
+import os
+import logging
+from datetime import datetime
+from fastapi import FastAPI, HTTPException, Depends, Header, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from models import (
     MonthlyDataRequest,
     RateCalculationResponse,
@@ -20,7 +24,17 @@ from config import (
     ESG_TARGET,
     MAX_LEVERAGE_RATIO,
     HIGH_RISK_THRESHOLD,
+    API_KEY,
+    ALLOWED_ORIGINS,
+    ENV,
 )
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO if ENV == "production" else logging.DEBUG,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
+logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="Covenant360 API",
@@ -28,14 +42,50 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# CORS middleware to allow frontend to connect
+# CORS middleware - uses environment variables
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization", "X-API-Key"],
 )
+
+# API Key Authentication Dependency
+async def verify_api_key(x_api_key: str = Header(..., alias="X-API-Key")):
+    """Verify API key from request header."""
+    if x_api_key != API_KEY:
+        logger.warning(f"Invalid API key attempt from {x_api_key[:10]}...")
+        raise HTTPException(
+            status_code=403,
+            detail="Invalid API key"
+        )
+    return x_api_key
+
+# Global exception handler
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    """Handle all unhandled exceptions."""
+    logger.error(
+        f"Unhandled exception: {type(exc).__name__}: {str(exc)}",
+        exc_info=True,
+        extra={"path": request.url.path, "method": request.method}
+    )
+    
+    # Don't expose internal errors in production
+    if ENV == "production":
+        error_message = "An internal server error occurred"
+    else:
+        error_message = f"Error: {str(exc)}"
+    
+    return JSONResponse(
+        status_code=500,
+        content={
+            "error": "Internal server error",
+            "message": error_message,
+            "timestamp": datetime.now().isoformat()
+        }
+    )
 
 
 @app.get("/")
@@ -49,12 +99,19 @@ async def root():
 
 @app.get("/health")
 async def health_check():
-    """Health check endpoint."""
-    return {"status": "healthy", "service": "Covenant360 API"}
+    """Health check endpoint (no authentication required)."""
+    return {
+        "status": "healthy",
+        "service": "Covenant360 API",
+        "timestamp": datetime.now().isoformat()
+    }
 
 
 @app.post("/calculate-rate", response_model=RateCalculationResponse)
-async def calculate_rate(request: MonthlyDataRequest):
+async def calculate_rate(
+    request: MonthlyDataRequest,
+    api_key: str = Depends(verify_api_key)
+):
     """
     Calculate the current interest rate based on financial and ESG data.
 
@@ -142,12 +199,25 @@ async def calculate_rate(request: MonthlyDataRequest):
             },
         )
 
+    except HTTPException:
+        # Re-raise HTTP exceptions as-is
+        raise
     except Exception as e:
+        logger.error(f"Error calculating rate: {str(e)}", exc_info=True)
+        # Don't expose internal errors in production
+        if ENV == "production":
+            raise HTTPException(
+                status_code=500,
+                detail="Error calculating rate. Please try again later."
+            )
         raise HTTPException(status_code=500, detail=f"Error calculating rate: {str(e)}")
 
 
 @app.post("/calculate-risk", response_model=RiskScoreResponse)
-async def calculate_risk(historical_data: HistoricalEBITDA):
+async def calculate_risk(
+    historical_data: HistoricalEBITDA,
+    api_key: str = Depends(verify_api_key)
+):
     """
     Calculate risk score from historical EBITDA data.
 
@@ -174,7 +244,17 @@ async def calculate_risk(historical_data: HistoricalEBITDA):
             message=result["message"],
         )
 
+    except HTTPException:
+        # Re-raise HTTP exceptions as-is
+        raise
     except Exception as e:
+        logger.error(f"Error calculating risk: {str(e)}", exc_info=True)
+        # Don't expose internal errors in production
+        if ENV == "production":
+            raise HTTPException(
+                status_code=500,
+                detail="Error calculating risk. Please try again later."
+            )
         raise HTTPException(status_code=500, detail=f"Error calculating risk: {str(e)}")
 
 

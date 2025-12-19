@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { CountUpNumber } from "@/components/ui/count-up";
 import { MonthlyData } from "@/lib/mockData";
 import { calculateCurrentRate } from "@/lib/logic";
+import { calculateRate } from "@/lib/api";
 
 interface RiskSimulatorProps {
   initialData: MonthlyData;
@@ -75,19 +76,7 @@ export function RiskSimulator({ initialData, onSimulationComplete }: RiskSimulat
         month: "Simulation",
       };
 
-      const response = await fetch("http://localhost:8000/calculate-rate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        throw new Error(`API error: ${response.statusText}`);
-      }
-
-      const data = await response.json();
+      const data = await calculateRate(payload);
       setSimulationResult(data);
       
       // Check if rate is lower than previous/current rate for glow effect

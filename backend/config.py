@@ -2,6 +2,16 @@
 Covenant360 Backend Configuration
 Centralized constants and configuration values.
 """
+import os
+from typing import List
+
+# Load environment variables
+ENV = os.getenv("ENV", "development")
+API_KEY = os.getenv("API_KEY", "dev-api-key-change-in-production")
+ALLOWED_ORIGINS = os.getenv(
+    "ALLOWED_ORIGINS",
+    "http://localhost:3000,http://127.0.0.1:3000"
+).split(",")
 
 # Historical EBITDA data for risk calculation
 # This represents the loan's historical performance
@@ -37,4 +47,14 @@ SUSTAINABILITY_DISCOUNT = 0.15
 SUSTAINABILITY_PENALTY = 0.05
 COV_LITE_PENALTY = 1.00
 DEFAULT_RISK_PREMIUM = 2.00
+
+# Validate critical environment variables in production
+if ENV == "production":
+    if not API_KEY or API_KEY == "dev-api-key-change-in-production":
+        raise ValueError(
+            "API_KEY must be set to a secure value in production. "
+            "Generate with: openssl rand -hex 32"
+        )
+    if len(API_KEY) < 32:
+        raise ValueError("API_KEY must be at least 32 characters in production")
 

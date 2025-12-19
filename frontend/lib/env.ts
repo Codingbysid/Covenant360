@@ -28,6 +28,7 @@ export const env = {
 
   // API
   API_BASE_URL: process.env.API_BASE_URL || "http://localhost:8000",
+  API_KEY: getEnvVar("API_KEY", "dev-api-key-change-in-production"),
 
   // Environment
   NODE_ENV: process.env.NODE_ENV || "development",
@@ -40,6 +41,11 @@ if (env.isProduction) {
   if (!env.NEXTAUTH_SECRET || env.NEXTAUTH_SECRET.length < 32) {
     throw new Error(
       "NEXTAUTH_SECRET must be at least 32 characters in production"
+    );
+  }
+  if (!env.API_KEY || env.API_KEY === "dev-api-key-change-in-production" || env.API_KEY.length < 32) {
+    throw new Error(
+      "API_KEY must be set to a secure value (at least 32 characters) in production"
     );
   }
 }
